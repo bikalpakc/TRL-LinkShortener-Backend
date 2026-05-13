@@ -1,6 +1,6 @@
 from django.urls import path
-from . import views
+from .views import AnalyticsView
 
 urlpatterns = [
-    # path('<str:short_code>/', views.AnalyticsView.as_view(), name='analytics'),
+    path('<str:short_code>/', AnalyticsView.as_view(), name='analytics'),
 ]
