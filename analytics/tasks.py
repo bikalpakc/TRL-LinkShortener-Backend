@@ -1,6 +1,8 @@
 from celery import shared_task
 from .models import Click
 from links.models import Link
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 
 @shared_task
 def record_click(link_id, ip_address, browser, referrer):
