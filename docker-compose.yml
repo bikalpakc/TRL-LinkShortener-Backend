@@ -1,0 +1,45 @@
+services:
+  # 1. The Database
+  db:
+    image: postgres:15
+    env_file: .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # 2. The Cache/Broker for Celery & Channels
+  redis:
+    image: redis:7
+
+  # 3. The Web Server (Handles HTTP and WebSockets)
+  web:
+    build: .
+    command: daphne -b 0.0.0.0 -p 8000 trl.asgi:application
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    env_file: .env
+    depends_on:
+      - db
+      - redis
+
+  # 4. The Background Worker (Handles click recording)
+  worker:
+    build: .
+    command: celery -A trl worker --loglevel=info
+    env_file: .env
+    depends_on:
+      - db
+      - redis
+
+  # 5. The Scheduler (Handles link expiration checks)
+  beat:
+    build: .
+    command: celery -A trl beat --loglevel=info
+    env_file: .env
+    depends_on:
+      - db
+      - redis
+
+volumes:
+  postgres_data:
