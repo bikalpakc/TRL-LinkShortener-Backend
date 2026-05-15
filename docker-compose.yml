@@ -41,5 +41,18 @@ services:
       - db
       - redis
 
+  # 6. The Frontend (React Development Server)
+  frontend:
+    build: ./react-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./react-frontend:/app
+      # This prevents node_modules from being overwritten by your host
+      - /app/node_modules 
+    env_file: .env
+    depends_on:
+      - web
+
 volumes:
   postgres_data:
