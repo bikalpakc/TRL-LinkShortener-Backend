@@ -13,7 +13,9 @@ services:
   # 3. The Web Server (Handles HTTP and WebSockets)
   web:
     build: .
-    command: daphne -b 0.0.0.0 -p 8000 trl.asgi:application
+    command: > 
+            sh -c "python manage.py migrate && 
+            daphne -b 0.0.0.0 -p 8000 trl.asgi:application"
     volumes:
       - .:/app
     ports:
