@@ -187,4 +187,5 @@ STORAGES = {
     },
 }
 
+# CORS settings
 CORS_ALLOW_ALL_ORIGINS = True # Only for development!
