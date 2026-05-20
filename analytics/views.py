@@ -38,6 +38,7 @@ class SummaryAnalyticsView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, short_code):
+        print("SummaryAnalyticsView called for short_code:", short_code)
         link = get_object_or_404(Link, short_code=short_code, user=request.user)
         
         return Response({
