@@ -111,3 +111,7 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+
+/* This ensures that if the 'dark' class is present on <html>, 
+   the dark variables are applied */
+@variant dark (&:where(.dark, .dark *));

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { ArrowLeft, Globe, Monitor, Smartphone } from 'lucide-react';
+import { ArrowLeft, Globe, Monitor, Smartphone, BarChart3 } from 'lucide-react';
 
 export default function LinkDetails() {
   const { shortCode } = useParams();
@@ -32,8 +32,8 @@ export default function LinkDetails() {
 
   if (error) return (
     <div className="p-10 text-center text-red-500">
-        <p>{error}</p>
-        <button onClick={() => navigate('/dashboard')} className="mt-4 text-indigo-600 underline">Go Back</button>
+      <p>{error}</p>
+      <button onClick={() => navigate('/dashboard')} className="mt-4 text-indigo-600 underline">Go Back</button>
     </div>
   );
 
@@ -47,14 +47,14 @@ export default function LinkDetails() {
         </button>
 
         <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-200 dark:border-slate-800 mb-8">
-            <h1 className="text-3xl font-bold mb-2">{summary.short_code}</h1>
-            <p className="text-slate-500 truncate">{summary.original_url}</p>
-            <div className="mt-6 flex gap-8">
-                <div>
-                    <span className="text-4xl font-black text-indigo-600">{summary.total_clicks}</span>
-                    <p className="text-xs uppercase text-slate-400 font-bold">Total Clicks</p>
-                </div>
+          <h1 className="text-3xl font-bold mb-2">{summary.short_code}</h1>
+          <p className="text-slate-500 truncate">{summary.original_url}</p>
+          <div className="mt-6 flex gap-8">
+            <div>
+              <span className="text-4xl font-black text-indigo-600">{summary.total_clicks}</span>
+              <p className="text-xs uppercase text-slate-400 font-bold">Total Clicks</p>
             </div>
+          </div>
         </div>
 
         <h2 className="text-xl font-bold mb-4">Click Log</h2>
@@ -65,6 +65,7 @@ export default function LinkDetails() {
                 <th className="p-4">Time</th>
                 <th className="p-4">IP Address</th>
                 <th className="p-4">Browser</th>
+                <th className="p-4">Device Information</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -73,6 +74,20 @@ export default function LinkDetails() {
                   <td className="p-4">{new Date(click.clicked_at).toLocaleString()}</td>
                   <td className="p-4 font-mono">{click.ip_address}</td>
                   <td className="p-4">{click.browser.split(' ')[0]}</td>
+<td className="p-4">
+    <div className="flex items-center gap-2">
+        {/* Use (click.device_type || "") to ensure it's at least an empty string before checking .includes() */}
+        {(click.device_type || "").includes('PC') ? (
+            <Monitor size={14} className="text-slate-400" />
+        ) : (
+            <Smartphone size={14} className="text-slate-400" />
+        )}
+        
+        <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
+            {click.device_type || "Unknown Device"}
+        </span>
+    </div>
+</td>
                 </tr>
               ))}
             </tbody>

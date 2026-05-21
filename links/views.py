@@ -56,8 +56,8 @@ class RedirectView(View):
         record_click.delay(
             link_id=link.id,
             ip_address=request.META.get('REMOTE_ADDR'),
-            browser=request.META.get('HTTP_USER_AGENT'),
-            referrer=request.META.get('HTTP_REFERER')
+            user_agent=request.META.get('HTTP_USER_AGENT'), #consists of information about browser and device. We will parse this in the analytics/tasks.py to extract clean browser and device names.
+            referrer=request.META.get('HTTP_REFERER'),
         )
 
         # 4. Redirect to the original long URL

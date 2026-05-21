@@ -13,25 +13,31 @@ const PrivateRoute = ({ children }) => {
 
 function App() {
   const [darkMode, setDarkMode] = useState(() => {
-    const saved = localStorage.getItem('theme');
-    // Default to light (false) unless 'dark' is saved
-    return saved === 'dark';
+    // 1. Check if user already manually picked a theme in the past
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        return savedTheme === 'dark';
+    }
+    
+    // 2. If no saved preference, use the System Theme (Default)
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
 
   useEffect(() => {
     const root = window.document.documentElement;
     if (darkMode) {
       root.classList.add('dark');
+      root.style.colorScheme = 'dark'; // Tells browser scrollbars etc. to be dark
       localStorage.setItem('theme', 'dark');
     } else {
       root.classList.remove('dark');
+      root.style.colorScheme = 'light';
       localStorage.setItem('theme', 'light');
     }
   }, [darkMode]);
-
   return (
     // Ensure the background color classes are on this div
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white transition-colors duration-300">
+    <div className="min-h-screen transition-colors duration-300 bg-white dark:bg-slate-950">
         <button 
           onClick={() => setDarkMode(!darkMode)}
           className="fixed bottom-6 right-6 p-4 rounded-full bg-indigo-600 text-white shadow-2xl z-[100] hover:scale-110 active:scale-95 transition-all"
