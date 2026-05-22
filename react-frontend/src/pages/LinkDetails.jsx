@@ -66,6 +66,7 @@ export default function LinkDetails() {
                 <th className="p-4">IP Address</th>
                 <th className="p-4">Browser</th>
                 <th className="p-4">Device Information</th>
+                <th className="p-4 text-slate-900 dark:text-white">Location</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -74,20 +75,30 @@ export default function LinkDetails() {
                   <td className="p-4">{new Date(click.clicked_at).toLocaleString()}</td>
                   <td className="p-4 font-mono">{click.ip_address}</td>
                   <td className="p-4">{click.browser.split(' ')[0]}</td>
-<td className="p-4">
-    <div className="flex items-center gap-2">
-        {/* Use (click.device_type || "") to ensure it's at least an empty string before checking .includes() */}
-        {(click.device_type || "").includes('PC') ? (
-            <Monitor size={14} className="text-slate-400" />
-        ) : (
-            <Smartphone size={14} className="text-slate-400" />
-        )}
-        
-        <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
-            {click.device_type || "Unknown Device"}
-        </span>
-    </div>
-</td>
+                  <td className="p-4">
+                    <div className="flex items-center gap-2">
+                      {/* Use (click.device_type || "") to ensure it's at least an empty string before checking .includes() */}
+                      {(click.device_type || "").includes('PC') ? (
+                        <Monitor size={14} className="text-slate-400" />
+                      ) : (
+                        <Smartphone size={14} className="text-slate-400" />
+                      )}
+
+                      <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                        {click.device_type || "Unknown Device"}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="p-4">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-bold text-slate-700 dark:text-slate-200">
+                        {click.city}, {click.country}
+                      </span>
+                      <span className="text-[10px] text-slate-400 uppercase font-bold tracking-tighter">
+                        IP: {click.ip_address}
+                      </span>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>

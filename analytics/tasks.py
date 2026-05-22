@@ -4,6 +4,7 @@ from links.models import Link
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from user_agents import parse
+import requests
 
 @shared_task
 def record_click(link_id, ip_address, user_agent, referrer):
@@ -13,6 +14,22 @@ def record_click(link_id, ip_address, user_agent, referrer):
 
         # Parsing the raw user agent string
         ua = parse(user_agent)
+
+        #Default Location values in case GeoIP lookup fails or is not possible (e.g., localhost)
+        country = "Unknown"
+        city = "Unknown"
+
+        #GeoIP Lookup (Only if not localhost)
+        if ip_address and ip_address != "127.0.0.1":
+            try:
+                # We use a free, reliable API for the lookup
+                response = requests.get(f"http://ip-api.com/json/{ip_address}", timeout=5)
+                data = response.json()
+                if data.get('status') == 'success':
+                    country = data.get('country', 'Unknown')
+                    city = data.get('city', 'Unknown')
+            except Exception as e:
+                print(f"GeoIP Error: {e}")
         
         # 1. Getting the Browser (Chrome, Firefox, etc.)
         browser_name = ua.browser.family 
@@ -39,6 +56,8 @@ def record_click(link_id, ip_address, user_agent, referrer):
         Click.objects.create(
             link=link,
             ip_address=ip_address,
+            city=city,
+            country=country,
             browser=browser_name,
             device_type=full_device_name,
             referrer=referrer

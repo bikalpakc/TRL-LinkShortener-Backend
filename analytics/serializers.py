@@ -5,4 +5,4 @@ from rest_framework import serializers
 class ClickSerializer(serializers.ModelSerializer):
     class Meta:
         model = Click
-        fields = ['id', 'link', 'clicked_at', 'ip_address', 'browser', 'device_type', 'referrer']
+        fields = ['id', 'link', 'clicked_at', 'ip_address', 'city', 'country', 'browser', 'device_type', 'referrer']

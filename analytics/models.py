@@ -9,6 +9,7 @@ class Click(models.Model):
     # Tracking data
     ip_address = models.GenericIPAddressField(null=True, blank=True)
     country = models.CharField(max_length=100, default='Unknown')
+    city = models.CharField(max_length=100, default='Unknown')
     browser = models.CharField(max_length=200, null=True, blank=True)
     device_type = models.CharField(max_length=50, null=True, blank=True)
     referrer = models.URLField(max_length=500, null=True, blank=True)
