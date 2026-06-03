@@ -1,4 +1,5 @@
-name: CI
+name: CI Pipeline
+
 on:
   push:
     branches: [ main ]
@@ -8,25 +9,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@v4
 
+      # 1. Static Code Analysis (SonarCloud)
       - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@02ef91109b2d581e987f88ecb4f57973e82aa610 # v3.1.0
+        uses: SonarSource/sonarcloud-github-action@v3.1.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
+      # 2. Configure AWS Credentials
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d44e03b0373 # v4.0.2
+        uses: aws-actions/configure-aws-credentials@v4 
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      # 3. Login to Amazon ECR
       - name: Login to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@062b18b96a7aff079d4ed91af0021ad12e17bd22 # v2.0.1
+        uses: aws-actions/amazon-ecr-login@v2 
 
+      # 4. Build and Tag
       - name: Build and Tag
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -35,8 +40,9 @@ jobs:
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
           
+      # 5. Security Scan (Trivy)
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@6e7b7d1fd383ca79a1f7274092b1588661665a6e # v0.24.0
+        uses: aquasecurity/trivy-action@v0.24.0 
         with:
           image-ref: ${{ steps.login-ecr.outputs.registry }}/trl-backend:${{ github.sha }}
           format: 'table'
@@ -45,6 +51,7 @@ jobs:
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
 
+      # 6. Push to ECR
       - name: Push image to ECR
         if: success()
         env:
