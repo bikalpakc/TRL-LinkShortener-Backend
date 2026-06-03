@@ -19,6 +19,9 @@ RUN apt-get update && apt-get install -y \
 
 
 COPY requirements.txt /app/
+
+# UPGRADING pip, setuptools, and wheel first to fix security bugs.
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
 RUN pip install --no-cache-dir -r requirements.txt
 
 
