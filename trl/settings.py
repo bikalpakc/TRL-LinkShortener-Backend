@@ -157,11 +157,12 @@ SIMPLE_JWT = {
 
 # Channels
 ASGI_APPLICATION = 'trl.asgi.application'
+REDIS_HOST = os.getenv('REDIS_HOST', 'redis')
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            'hosts': [('redis', 6379)],
+            'hosts': [(REDIS_HOST, 6379)],
         },
     },
 }
