@@ -63,3 +63,24 @@ jobs:
         run: |
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+      # Step 7: Update the Web Service
+      - name: Deploy Web to Amazon ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: trl-web-task
+          service: trl-web-service
+          cluster: trl-cluster
+          # This tells ECS to pull the latest image you just pushed
+          image: ${{ steps.login-ecr.outputs.registry }}/trl-backend:latest
+          wait-for-service-stability: true
+
+      # Step 8: Update the Worker Service (Celery Worker + Celery Beat)
+      - name: Deploy Worker to Amazon ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: trl-worker-task
+          service: trl-worker-service
+          cluster: trl-cluster
+          image: ${{ steps.login-ecr.outputs.registry }}/trl-backend:latest
+          wait-for-service-stability: true
