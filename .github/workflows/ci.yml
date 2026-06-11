@@ -64,10 +64,16 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
+
+
+# There is a "glitch" in AWS right now. When the pipeline downloads the Task Definition from AWS, AWS includes a new experimental field called enableFaultInjection. However, when the pipeline tries to send that same recipe back to AWS to update it, the AWS deployment tool says, "I don't recognize this new field yet!" and crashes.
+# To fix this, we need to add a "Cleaning" step. We are using a tool called jq (which is built into GitHub Actions) to strip out that problematic field (and a few other metadata fields AWS doesn't like) before we deploy.
+
       # 7. WEB SERVICE DEPLOYMENT
-      - name: Download current Task Definition (Web)
+      - name: Download and Clean Task Definition (Web)
         run: |
-          aws ecs describe-task-definition --task-definition trl-web-task --query taskDefinition > task-def-web.json
+          aws ecs describe-task-definition --task-definition trl-web-task --query taskDefinition > raw-task-def-web.json
+          cat raw-task-def-web.json | jq 'del(.taskDefinitionArn, .revision, .status, .registeredAt, .registeredBy, .compatibilities, .requiresAttributes, .enableFaultInjection)' > task-def-web.json
 
       - name: Fill in the new image ID in the Amazon ECS task definition (Web)
         id: task-def-web
@@ -86,9 +92,10 @@ jobs:
           wait-for-service-stability: true
 
       # 8. WORKER & BEAT SERVICE DEPLOYMENT
-      - name: Download current Task Definition (Worker/Beat)
+      - name: Download and Clean Task Definition (Worker)
         run: |
-          aws ecs describe-task-definition --task-definition trl-worker-task --query taskDefinition > task-def-worker.json
+          aws ecs describe-task-definition --task-definition trl-worker-task --query taskDefinition > raw-task-def-worker.json
+          cat raw-task-def-worker.json | jq 'del(.taskDefinitionArn, .revision, .status, .registeredAt, .registeredBy, .compatibilities, .requiresAttributes, .enableFaultInjection)' > task-def-worker.json
 
       - name: Update 'worker' container image
         id: render-worker
@@ -102,7 +109,6 @@ jobs:
         id: render-beat
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          # We are using the output from the 'worker' render step as input here
           task-definition: ${{ steps.render-worker.outputs.task-definition }}
           container-name: beat
           image: ${{ steps.login-ecr.outputs.registry }}/trl-backend:latest
@@ -110,7 +116,6 @@ jobs:
       - name: Deploy Amazon ECS task definition (Worker Service)
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
-          # Using the final output (which has both worker and beat updated)
           task-definition: ${{ steps.render-beat.outputs.task-definition }}
           service: trl-worker-service
           cluster: trl-cluster
