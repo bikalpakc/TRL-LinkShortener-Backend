@@ -1,4 +1,4 @@
-name: CI Pipeline
+name: CI/CD Pipeline
 
 on:
   push:
@@ -64,23 +64,54 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
-      # Step 7: Update the Web Service
-      - name: Deploy Web to Amazon ECS
+      # 7. WEB SERVICE DEPLOYMENT
+      - name: Download current Task Definition (Web)
+        run: |
+          aws ecs describe-task-definition --task-definition trl-web-task --query taskDefinition > task-def-web.json
+
+      - name: Fill in the new image ID in the Amazon ECS task definition (Web)
+        id: task-def-web
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-def-web.json
+          container-name: web
+          image: ${{ steps.login-ecr.outputs.registry }}/trl-backend:latest
+
+      - name: Deploy Amazon ECS task definition (Web)
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
-          task-definition: trl-web-task
+          task-definition: ${{ steps.task-def-web.outputs.task-definition }}
           service: trl-web-service
           cluster: trl-cluster
-          # This tells ECS to pull the latest image you just pushed
-          image: ${{ steps.login-ecr.outputs.registry }}/trl-backend:latest
           wait-for-service-stability: true
 
-      # Step 8: Update the Worker Service (Celery Worker + Celery Beat)
-      - name: Deploy Worker to Amazon ECS
+      # 8. WORKER & BEAT SERVICE DEPLOYMENT
+      - name: Download current Task Definition (Worker/Beat)
+        run: |
+          aws ecs describe-task-definition --task-definition trl-worker-task --query taskDefinition > task-def-worker.json
+
+      - name: Update 'worker' container image
+        id: render-worker
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-def-worker.json
+          container-name: worker
+          image: ${{ steps.login-ecr.outputs.registry }}/trl-backend:latest
+
+      - name: Update 'beat' container image
+        id: render-beat
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          # We are using the output from the 'worker' render step as input here
+          task-definition: ${{ steps.render-worker.outputs.task-definition }}
+          container-name: beat
+          image: ${{ steps.login-ecr.outputs.registry }}/trl-backend:latest
+
+      - name: Deploy Amazon ECS task definition (Worker Service)
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
-          task-definition: trl-worker-task
+          # Using the final output (which has both worker and beat updated)
+          task-definition: ${{ steps.render-beat.outputs.task-definition }}
           service: trl-worker-service
           cluster: trl-cluster
-          image: ${{ steps.login-ecr.outputs.registry }}/trl-backend:latest
           wait-for-service-stability: true
