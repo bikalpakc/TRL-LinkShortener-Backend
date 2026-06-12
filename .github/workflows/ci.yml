@@ -102,7 +102,7 @@ jobs:
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: task-def-worker.json
-          container-name: worker
+          container-name: Celery-Worker
           image: ${{ steps.login-ecr.outputs.registry }}/trl-backend:latest
 
       - name: Update 'beat' container image
@@ -110,7 +110,7 @@ jobs:
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: ${{ steps.render-worker.outputs.task-definition }}
-          container-name: beat
+          container-name: Celery-Beat
           image: ${{ steps.login-ecr.outputs.registry }}/trl-backend:latest
 
       - name: Deploy Amazon ECS task definition (Worker Service)
