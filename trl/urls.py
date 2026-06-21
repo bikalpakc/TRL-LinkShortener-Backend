@@ -25,6 +25,6 @@ urlpatterns = [
     path('api/links/', include('links.urls')),
     path('api/analytics/', include('analytics.urls')),
 
-    # Catch-all redirect route
-    path('<str:short_code>/', RedirectView.as_view(), name='redirect'),
+    # Catch-all redirect route. Added s prefix so that it is easy to redirect to the redirect page via AWS Loadbalancer rules.
+    path('s/<str:short_code>/', RedirectView.as_view(), name='redirect'),
 ]
