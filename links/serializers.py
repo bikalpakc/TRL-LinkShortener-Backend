@@ -31,8 +31,8 @@ class LinkSerializer(serializers.ModelSerializer):
     def get_short_url(self, obj):
         request = self.context.get('request')
         if request:
-            return request.build_absolute_uri(f'/{obj.active_code}/')
-        return f'/{obj.active_code}/'
+            return request.build_absolute_uri(f'/s/{obj.active_code}/')
+        return f'/s/{obj.active_code}/'
 
     def get_total_clicks(self, obj):
         return obj.clicks.count()
