@@ -182,6 +182,9 @@ CHANNEL_LAYERS = {
 CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL')
 CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND')
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+# If Redis is down, don't wait forever, just fail so the user can still redirect
+CELERY_EVENT_QUEUE_EXPIRES = 60
 
 #Celery Beat Schedule
 from celery.schedules import crontab
@@ -205,3 +208,4 @@ STORAGES = {
 
 # CORS settings
 CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:5173').split(',')
+
