@@ -168,12 +168,12 @@ SIMPLE_JWT = {
 
 # Channels
 ASGI_APPLICATION = 'trl.asgi.application'
-REDIS_HOST = os.getenv('REDIS_HOST', 'redis')
+REDIS_HOST = os.getenv('REDIS_HOST', 'redis.trl.local')
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [f"rediss://{REDIS_HOST}:6379/0?ssl_cert_reqs=none"],
+            "hosts": [(REDIS_HOST, 6379)],
         },
     },
 }
@@ -186,15 +186,6 @@ CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 # If Redis is down, don't wait forever, just fail so the user can still redirect
 CELERY_EVENT_QUEUE_EXPIRES = 60
 
-# Settings to make Celery "Cluster-aware." Cause, we are running Redis in AWS Elasticache Cluster Mode Enabled. This is required to avoid the error when using Celery with Redis Cluster.
-# 1. Disable the features causing the 'CrossSlotError'
-CELERY_WORKER_MINGLE = False
-CELERY_WORKER_GOSSIP = False
-
-# 2. Force all keys into a single 'hash slot' using curly braces {}. This ensures Redis Cluster doesn't complain about multiple slots.
-CELERY_TASK_DEFAULT_QUEUE = '{default}'
-CELERY_TASK_DEFAULT_ROUTING_KEY = '{default}'
-CELERY_TASK_DEFAULT_EXCHANGE = '{default}'
 
 # 3. If we use custom queues, ensure they also use {}
 from kombu import Queue
