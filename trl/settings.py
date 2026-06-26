@@ -182,9 +182,6 @@ CHANNEL_LAYERS = {
 CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL')
 CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND')
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
-CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
-# If Redis is down, don't wait forever, just fail so the user can still redirect
-CELERY_EVENT_QUEUE_EXPIRES = 60
 
 
 # 3. If we use custom queues, ensure they also use {}
